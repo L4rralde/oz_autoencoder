@@ -13,7 +13,7 @@ from src.utils import GIT_ROOT
 
 
 class Autoencoder(nn.Module):
-    def __init__(self, x_dim: int, z_dim: int, n_classes: int=3) -> None:
+    def __init__(self, x_dim: int, z_dim: int, n_classes: int=3, tag: str="") -> None:
         super().__init__()
         self.encoder = nn.Sequential(
             nn.Linear(x_dim, 256),
@@ -34,6 +34,7 @@ class Autoencoder(nn.Module):
         )
         self._x_dim = x_dim
         self._z_dim = z_dim
+        self.tag = tag
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         z = self.encoder(x)
@@ -42,8 +43,8 @@ class Autoencoder(nn.Module):
         return x_hat, y_hat
 
     @classmethod
-    def load_best(cls, x_dim: int, z_dim: int) -> "Autoencoder":
-        model = cls(x_dim, z_dim)
+    def load_best(cls, x_dim: int, z_dim: int, n_classes: int=3, tag: str="") -> "Autoencoder":
+        model = cls(x_dim, z_dim, n_classes, tag)
         path = f"{GIT_ROOT}/models/z_dim_{z_dim}_best"
         status = model.load_state_dict(
             torch.load(
@@ -121,7 +122,7 @@ def train(model: Autoencoder, epochs: int, device: str, dataloader: object, alph
         logger.info(f"Epoch: {epoch}. Training loss:{train_loss: .3e}.")
         if train_loss < best_loss:
             best_loss = train_loss
-            model_path = f"{GIT_ROOT}/models/z_dim_{model._z_dim}_best"
+            model_path = f"{GIT_ROOT}/models/{model.tag}_{model._z_dim}_best"
             logger.info(f"Saving model at: {model_path}")
             torch.save(model.state_dict(), model_path)
     end = perf_counter()

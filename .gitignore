@@ -2,4 +2,4 @@ __pycache__
 data/books
 .ipynb_checkpoints/
 *.ipynb
-models
+*.log
