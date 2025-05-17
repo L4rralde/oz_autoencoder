@@ -1,0 +1,5 @@
+__pycache__
+data/books
+.ipynb_checkpoints/
+Untitled*.ipynb
+models
