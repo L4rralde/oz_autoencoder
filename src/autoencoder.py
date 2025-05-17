@@ -13,7 +13,7 @@ from src.utils import GIT_ROOT
 
 
 class Autoencoder(nn.Module):
-    def __init__(self, x_dim: int, z_dim: int) -> None:
+    def __init__(self, x_dim: int, z_dim: int, n_classes: int=3) -> None:
         super().__init__()
         self.encoder = nn.Sequential(
             nn.Linear(x_dim, 256),
@@ -29,13 +29,17 @@ class Autoencoder(nn.Module):
             nn.ReLU(),
             nn.Linear(256, x_dim),
         )
+        self.classifier = nn.Sequential(
+            nn.Linear(z_dim, n_classes)
+        )
         self._x_dim = x_dim
         self._z_dim = z_dim
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         z = self.encoder(x)
         x_hat = self.decoder(z)
-        return x_hat
+        y_hat = self.classifier(z)
+        return x_hat, y_hat
 
     @classmethod
     def load_best(cls, x_dim: int, z_dim: int) -> "Autoencoder":
@@ -57,6 +61,7 @@ class BowDataset(Dataset):
         self._X = torch.from_numpy(np.float32(X))
         one_hot_y = BowDataset.to_categorical(np.int32(y))
         self._y = torch.from_numpy(one_hot_y)
+
     def __len__(self) -> int:
         return self._y.shape[0]
 
@@ -84,7 +89,8 @@ def train(model: Autoencoder, epochs: int, device: str, dataloader: object, alph
     logger.addHandler(fileh)
 
     optimizer = Adam(model.parameters(), lr=1e-3)
-    loss_fn = nn.MSELoss()
+    loss_fn_recons = nn.MSELoss()
+    loss_fn_class = nn.CrossEntropyLoss()
 
     train_losses = []
     best_loss = float('inf')
@@ -95,11 +101,14 @@ def train(model: Autoencoder, epochs: int, device: str, dataloader: object, alph
         train_loss = 0.0
         model.train()
         num_train_elements = 0
-        for x, _ in dataloader:
+        for x, y in dataloader:
             x = x.to(device)
+            y = y.to(device)
             optimizer.zero_grad()
-            x_hat = model(x)
-            loss = loss_fn(x_hat, x)
+            x_hat, y_hat = model(x)
+            loss_recons = loss_fn_recons(x_hat, x)
+            loss_class = loss_fn_class(y_hat, y)
+            loss = loss_recons + alpha*loss_class
             loss.backward()
             optimizer.step()
 
@@ -133,15 +142,15 @@ def encode_and_test(model: Autoencoder, device: str, dataloader: object) -> np.n
     test_loss = 0.0
     zs = []
 
-    loss_fn = nn.MSELoss()
+    loss_fn_recons = nn.MSELoss()
     model.eval()
     with torch.no_grad():
         for x, _ in dataloader:
             x = x.to(device)
             z = model.encoder(x)
             zs.append(z.cpu().numpy())
-            x_hat = model.decoder(z)
-            loss = loss_fn(x_hat, x)
+            x_hat, _ = model.decoder(z)
+            loss = loss_fn_recons(x_hat, x)
             batch_size = x.size(0)
             test_loss += loss.data.item() * batch_size
             num_elements += batch_size

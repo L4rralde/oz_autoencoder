@@ -26,9 +26,10 @@ def main() -> None:
 
     hist = train(
         autoencoder,
-        500,
+        100,
         device,
         dataloader,
+        alpha=1.0
     )
 
 
