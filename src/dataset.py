@@ -1,4 +1,5 @@
 import os
+from random import sample, shuffle
 
 from tqdm import tqdm
 import numpy as np
@@ -73,4 +74,54 @@ class Dataset:
     @staticmethod
     def load_categories() -> object:
         return CategoricalAuthors.from_file(CATS_PATH).to_dict()
-        
+
+
+def sub_dataset(*args, n: int = None) -> tuple:
+    total = len(args[0])
+    if n is None:
+        n = total//2
+    idcs = sample(range(total), n)
+    return [arg[idcs] for arg in args]
+
+
+def group_obs(X: np.ndarray, y: np.ndarray, labels: dict, m: int = 100) -> tuple:
+    label_idcs = {
+        label: [i for i, x in enumerate(y == label) if x]
+        for label in labels.keys()
+    }
+
+    grouped_obs = {}
+    for label in label_idcs.keys():
+        label_obs = X[label_idcs[label]]
+        M, N = label_obs.shape
+
+        remainder = M % m
+        if remainder != 0:
+            pad_rows = m - remainder
+            padding = np.zeros((pad_rows, N))
+            label_obs = np.vstack([label_obs, padding])
+        else:
+            label_obs = label_obs
+
+        M, N = label_obs.shape
+        grouped = label_obs.reshape(M//m, m, N).sum(axis=1)
+        grouped_obs[label] = grouped
+
+    X_merged = np.vstack([*grouped_obs.values()])
+    y_merged = np.zeros(X_merged.shape[0])
+
+    start_idx = 0
+    for label in label_idcs.keys():
+        end_idx = start_idx + len(grouped_obs[label])
+        y_merged[start_idx: end_idx] = label
+        start_idx = end_idx
+    return X_merged, y_merged
+
+
+def shuffle_dataset(*args) -> None:
+    idcs = list(range(len(args[0])))
+    shuffle(idcs)
+    return [
+        [arg[i] for i in idcs]
+        for arg in args
+    ]
