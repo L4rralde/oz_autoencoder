@@ -35,7 +35,7 @@ class BagOfWords:
         return getattr(self.vectorizer, key)
 
     def __get_transform_generator(self, books: list) -> None:
-        if type(books[0]) == str:
+        if type(books) == list and type(books[0]) == str:
             return (
                 preprocess_str(line)
                 for line in books

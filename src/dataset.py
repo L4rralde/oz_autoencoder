@@ -5,11 +5,14 @@ import numpy as np
 from scipy import sparse
 
 from src.utils import GIT_ROOT
+from src.books import CategoricalAuthors
 
 
 MATRICES_PATH = f"{GIT_ROOT}/data/matrices"
 X_PATH = f"{MATRICES_PATH}/sparse_X.npz"
 Y_PATH = f"{MATRICES_PATH}/sparse_y.npz"
+CATS_PATH = f"{MATRICES_PATH}/categories.cat"
+
 
 class Dataset:
     def __init__(self, bow: object, books: object) -> None:
@@ -47,17 +50,27 @@ class Dataset:
 
         self.dataset = (sparse_x, sparse_y)
         self.to_memory()
+        categoy.save(CATS_PATH)
 
     def to_memory(self) -> None:
         print(f"Saving checkpoint in memory")
         os.makedirs(MATRICES_PATH, exist_ok=True)
         sparse_x, sparse_y = self.dataset
         sparse.save_npz(X_PATH, sparse_x)
-        sparse.save_npz(Y_PATH, sparse_y)   
+        sparse.save_npz(Y_PATH, sparse_y)
 
     @staticmethod
-    def load_dataset() -> tuple:
+    def load_dataset(load_categories: bool = False) -> tuple:
         print("Loading checkpoint from memory")
         sparse_x = sparse.load_npz(X_PATH)
         sparse_y = sparse.load_npz(Y_PATH)
-        return sparse_x.toarray(), sparse_y.toarray().flatten()
+        x = sparse_x.toarray()
+        y = sparse_y.toarray().flatten()
+        if load_categories:
+            return x, y, Dataset.load_categories()
+        return x, y
+
+    @staticmethod
+    def load_categories() -> object:
+        return CategoricalAuthors.from_file(CATS_PATH).to_dict()
+        

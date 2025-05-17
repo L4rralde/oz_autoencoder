@@ -1,5 +1,5 @@
 import os
-from io import TextIOWrapper
+import pickle
 
 import urllib.request
 
@@ -210,3 +210,24 @@ class CategoricalAuthors:
 
     def __call__(self, author: str) -> int:
         return self.transform(author)
+
+    def save(self, path: str) -> None:
+        with open(path, 'wb') as handle:
+            pickle.dump(
+                self.authors,
+                handle,
+                protocol=pickle.HIGHEST_PROTOCOL
+        )
+
+    @classmethod
+    def from_file(cls, path: str) -> "CategoricalAuthors":
+        object = cls()
+        with open(path, 'rb') as handle:
+            object.authors = pickle.load(handle)
+        return object
+
+    def to_dict(self) -> dict:
+        return {
+            i: author
+            for i, author in enumerate(self.authors)
+        }
