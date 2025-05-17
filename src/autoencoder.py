@@ -45,7 +45,7 @@ class Autoencoder(nn.Module):
     @classmethod
     def load_best(cls, x_dim: int, z_dim: int, n_classes: int=3, tag: str="") -> "Autoencoder":
         model = cls(x_dim, z_dim, n_classes, tag)
-        path = f"{GIT_ROOT}/models/z_dim_{z_dim}_best"
+        path = f"{GIT_ROOT}/models/{tag}_{z_dim}_best"
         status = model.load_state_dict(
             torch.load(
                 path,
