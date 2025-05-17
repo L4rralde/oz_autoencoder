@@ -149,7 +149,7 @@ def encode_and_test(model: Autoencoder, device: str, dataloader: object) -> np.n
             x = x.to(device)
             z = model.encoder(x)
             zs.append(z.cpu().numpy())
-            x_hat, _ = model.decoder(z)
+            x_hat = model.decoder(z)
             loss = loss_fn_recons(x_hat, x)
             batch_size = x.size(0)
             test_loss += loss.data.item() * batch_size
