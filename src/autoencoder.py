@@ -60,7 +60,7 @@ class BowDataset(Dataset):
     def __init__(self, X: np.ndarray, y: np.ndarray) -> None:
         self._X = torch.from_numpy(np.float32(X))
         one_hot_y = BowDataset.to_categorical(np.int32(y))
-        self._y = torch.from_numpy(one_hot_y)
+        self._y = torch.from_numpy(one_hot_y).float()
 
     def __len__(self) -> int:
         return self._y.shape[0]
