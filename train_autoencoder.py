@@ -18,16 +18,7 @@ def main() -> None:
     X, y = group_obs(X, y, labels, 100)
     dataset = BowDataset(X, y)
 
-    tot_size = len(dataset)
-    val_size = tot_size//10
-    train_size = tot_size - val_size
-
-    train_dataset, val_dataset = random_split(
-        dataset, [train_size, val_size]
-    )
-
-    train_dataloader = DataLoader(train_dataset, batch_size=128)
-    val_dataloader = DataLoader(val_dataset, batch_size=128)
+    dataloader = DataLoader(dataset, batch_size=32)
 
     M, N = X.shape
     autoencoder = Autoencoder(N, 2)
@@ -35,10 +26,9 @@ def main() -> None:
 
     hist = train(
         autoencoder,
-        2000,
+        500,
         device,
-        train_dataloader,
-        val_dataloader
+        dataloader,
     )
 
 
