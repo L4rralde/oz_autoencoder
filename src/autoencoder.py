@@ -55,16 +55,22 @@ class Autoencoder(nn.Module):
 class BowDataset(Dataset):
     def __init__(self, X: np.ndarray, y: np.ndarray) -> None:
         self._X = torch.from_numpy(np.float32(X))
-        self._y = torch.from_numpy(np.float32(y))
-
+        one_hot_y = BowDataset.to_categorical(np.int32(y))
+        self._y = torch.from_numpy(one_hot_y)
     def __len__(self) -> int:
         return self._y.shape[0]
 
     def __getitem__(self, idx: int) -> tuple:
         return self._X[idx], self._y[idx]
 
+    @staticmethod
+    def to_categorical(y: np.ndarray) -> np.ndarray:
+        one_hot = np.zeros((y.size, y.max() + 1))
+        one_hot[np.arange(y.size), y] = 1
+        return one_hot
 
-def train(model: Autoencoder, epochs: int, device: str, dataloader: object) -> dict:
+
+def train(model: Autoencoder, epochs: int, device: str, dataloader: object, alpha: float=0) -> dict:
     model_dir = f"{GIT_ROOT}/models"
     os.makedirs(model_dir, exist_ok=True)
 
