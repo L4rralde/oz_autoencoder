@@ -26,7 +26,7 @@ def main() -> None:
         1000,
         device,
         dataloader,
-        alpha=0.2
+        alpha=0.1
     )
 
 if __name__ == '__main__':
