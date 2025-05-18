@@ -125,3 +125,11 @@ def shuffle_dataset(*args) -> None:
         [arg[i] for i in idcs]
         for arg in args
     ]
+
+def load_twits_dataset() -> tuple:
+    x_path = f"{MATRICES_PATH}/sparse_twits.npz"
+    y_path = f"{MATRICES_PATH}/twits_labels.npz"
+    sparse_x = sparse.load_npz(x_path)
+    y = np.load(y_path)['arr_0']
+    x = sparse_x.toarray()
+    return x, y
