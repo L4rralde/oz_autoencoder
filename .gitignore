@@ -3,3 +3,4 @@ data/books
 .ipynb_checkpoints/
 *.ipynb
 *.log
+model/*.npy
