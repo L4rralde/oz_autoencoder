@@ -21,12 +21,12 @@ def main() -> None:
     dataloader = DataLoader(dataset, batch_size=32)
 
     M, N = X.shape
-    autoencoder = Autoencoder(N, 2)
+    autoencoder = Autoencoder(N, 2, n_classes=3 ,tag='oz')
     autoencoder = autoencoder.to(device)
 
     hist = train(
         autoencoder,
-        100,
+        5000,
         device,
         dataloader,
         alpha=1.0
