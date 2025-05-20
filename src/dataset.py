@@ -76,6 +76,12 @@ class Dataset:
         return CategoricalAuthors.from_file(CATS_PATH).to_dict()
 
 
+def load_grouped_dataset(n: int) -> tuple:
+    X, y, labels = Dataset.load_dataset(load_categories=True)
+    X, y = group_obs(X, y, labels, n)
+    return X, y, labels
+
+
 def sub_dataset(*args, n: int = None) -> tuple:
     total = len(args[0])
     if n is None:
@@ -126,6 +132,7 @@ def shuffle_dataset(*args) -> None:
         for arg in args
     ]
 
+
 def load_twits_dataset() -> tuple:
     x_path = f"{MATRICES_PATH}/sparse_twits.npz"
     y_path = f"{MATRICES_PATH}/twits_labels.npz"
@@ -133,3 +140,5 @@ def load_twits_dataset() -> tuple:
     y = np.load(y_path)['arr_0']
     x = sparse_x.toarray()
     return x, y
+
+

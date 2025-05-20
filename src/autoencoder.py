@@ -4,7 +4,7 @@ from time import perf_counter
 
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from torch.optim import Adam
 import numpy as np
 from tqdm import tqdm
@@ -75,6 +75,12 @@ class BowDataset(Dataset):
         one_hot[np.arange(y.size), y] = 1
         return one_hot
 
+    @classmethod
+    def dataloader(cls, X: np.ndarray, y: np.ndarray, **kwargs) -> DataLoader:
+        dataset = cls(X, y)
+        dataloader = DataLoader(dataset, **kwargs)
+        return dataloader
+
 
 def train(model: Autoencoder, epochs: int, device: str, dataloader: object, alpha: float=0) -> dict:
     model_dir = f"{GIT_ROOT}/models"
@@ -138,7 +144,7 @@ def train(model: Autoencoder, epochs: int, device: str, dataloader: object, alph
     return hist
 
 
-def encode_and_test(model: Autoencoder, device: str, dataloader: object) -> np.ndarray:
+def encode_and_test(model: Autoencoder, dataloader: object) -> np.ndarray:
     num_elements = 0
     test_loss = 0.0
     zs = []
@@ -147,7 +153,6 @@ def encode_and_test(model: Autoencoder, device: str, dataloader: object) -> np.n
     model.eval()
     with torch.no_grad():
         for x, _ in dataloader:
-            x = x.to(device)
             z = model.encoder(x)
             zs.append(z.cpu().numpy())
             x_hat = model.decoder(z)
@@ -156,5 +161,5 @@ def encode_and_test(model: Autoencoder, device: str, dataloader: object) -> np.n
             test_loss += loss.data.item() * batch_size
             num_elements += batch_size
     test_loss /= num_elements
-    print(f"Loss: {test_loss}")
+    print(f"Loss: {test_loss:.4f}")
     return np.vstack(zs)
