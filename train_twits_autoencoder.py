@@ -23,10 +23,10 @@ def main() -> None:
 
     hist = train(
         autoencoder,
-        500,
+        1000,
         device,
         dataloader,
-        alpha=1.0
+        alpha=0.1
     )
 
 if __name__ == '__main__':
