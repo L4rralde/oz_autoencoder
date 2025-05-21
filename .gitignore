@@ -4,3 +4,6 @@ data/books
 *.ipynb
 *.log
 models/*.npy
+*.pdf
+*.html
+.DS_Store
